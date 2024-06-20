@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	r := mux.NewRouter()
 
+	r := mux.NewRouter()
 	// 定義した helloHandler を使うように登録
 	r.HandleFunc("/hello", handlers.HelloHandler).Methods(http.MethodGet)
 	r.HandleFunc("/article", handlers.PostArticleHandler).Methods(http.MethodPost)

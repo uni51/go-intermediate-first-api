@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,12 +19,36 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 // /article のハンドラ
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
-	article := models.Article1
+	// 1. バイトスライス reqBodybuffer を何らかの形で用意
+	length, err := strconv.Atoi(req.Header.Get("Content-Length"))
+	if err != nil {
+		http.Error(w, "cannot get Content-Length\n", http.StatusBadRequest)
+		return
+	}
+	reqBodybuffer := make([]byte, length)
+
+	// 2. Readメソッドでリクエストボディを読み出し
+	if _, err := req.Body.Read(reqBodybuffer); !errors.Is(err, io.EOF) {
+		// Readメソッドからのerrがio.EOF以外だった場合、500番エラーを返却
+		http.Error(w, "fail to get request body\n", http.StatusBadRequest)
+		return
+	}
+	// 3. ボディを Close する
+	defer req.Body.Close()
+
+	var reqArticle models.Article
+	if err := json.Unmarshal(reqBodybuffer, &reqArticle); err != nil {
+		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		return
+	}
+
+	article := reqArticle
 	jsonData, err := json.Marshal(article)
 	if err != nil {
 		http.Error(w, "fail to encode json\n", http.StatusInternalServerError)
 		return
 	}
+
 	w.Write(jsonData)
 }
 

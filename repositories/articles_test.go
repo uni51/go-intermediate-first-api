@@ -72,3 +72,28 @@ func TestSelectArticleDetail(t *testing.T) {
 		})
 	}
 }
+
+// InsertArticle関数のテスト
+func TestInsertArticle(t *testing.T) {
+	article := models.Article{
+		Title:    "insertTest",
+		Contents: "testest",
+		UserName: "saki",
+	}
+	expectedArticleNum := 3
+	newArticle, err := repositories.InsertArticle(testDB, article)
+	if err != nil {
+		t.Error(err)
+	}
+	if newArticle.ID != expectedArticleNum {
+		t.Errorf("new article id is expected %d but got %d\n", expectedArticleNum, newArticle.ID)
+	}
+
+	t.Cleanup(func() {
+		const sqlStr = `
+			delete from articles
+			where title = ? and contents = ? and username = ?
+		`
+		testDB.Exec(sqlStr, article.Title, article.Contents, article.UserName)
+	})
+}

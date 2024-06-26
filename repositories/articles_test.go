@@ -80,6 +80,7 @@ func TestInsertArticle(t *testing.T) {
 		Contents: "testest",
 		UserName: "saki",
 	}
+
 	expectedArticleNum := 3
 	newArticle, err := repositories.InsertArticle(testDB, article)
 	if err != nil {
